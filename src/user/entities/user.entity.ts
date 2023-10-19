@@ -20,4 +20,8 @@ export class Users {
   @Column()
   @Field()
   password: string;
+
+  @Column()
+  @Field()
+  accessToken?: string;
 }

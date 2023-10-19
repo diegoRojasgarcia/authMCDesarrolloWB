@@ -28,10 +28,17 @@ export class AuthService {
       ...userData,
       password: bcrypt.hashSync(password, 10),
     });
-    delete usuario.password;
+
+    const token = this.getJwtToken({ id: usuario.id });
+
+    usuario.accessToken = token;
+
+    const usuarioSave = await this.userService.saveUser(usuario);
+
+    delete usuarioSave.password;
     return {
-      user: usuario,
-      access_token: this.getJwtToken({ id: usuario.id }),
+      user: usuarioSave,
+      access_token: token,
     };
   }
 
@@ -44,10 +51,17 @@ export class AuthService {
     if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Credentials are not valid');
 
+    const token = this.getJwtToken({ id: user.id });
+
+    user.accessToken = token;
+
+    const usuarioSave = await this.userService.saveUser(user);
+
     delete user.password;
+
     return {
-      access_token: await this.getJwtToken({ id: user.id }),
-      user: user,
+      access_token: token,
+      user: usuarioSave,
     };
   }
 
