@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Users } from '../entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserInput } from '../dto/create-user.input';
+import { UpdateUserDto } from '../dto/update-user.input';
 
 @Injectable()
 export class UserService {
@@ -34,5 +35,22 @@ export class UserService {
   async createUser(createUserInput: CreateUserInput): Promise<Users> {
     const newUser = this.usersRepository.create(createUserInput);
     return this.usersRepository.save(newUser);
+  }
+
+  async update(updateUserDto: UpdateUserDto) {
+    const { id, ...updateDto } = updateUserDto;
+    let userDB = await this.findByEmail(updateDto.email);
+    if (userDB)
+      throw new BadRequestException(`Email ingresado se encuentra registrado`);
+    userDB = await this.usersRepository.preload({
+      id: id,
+      ...updateDto,
+    });
+    try {
+      await this.usersRepository.save(userDB);
+      return userDB;
+    } catch (error) {
+      return error;
+    }
   }
 }

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from 'src/user/services/user.service';
 import { LoginUserInput } from '../dto/login-user.input';
 import { JwtService } from '@nestjs/jwt';
@@ -14,6 +18,12 @@ export class AuthService {
 
   async register(registerUserInput: RegisterUserInput) {
     const { password, ...userData } = registerUserInput;
+    const user = await this.userService.findByEmail(userData.email);
+    if (user)
+      throw new BadRequestException(
+        'Email ingresado ya está asociado a una cuenta',
+      );
+
     const usuario = await this.userService.createUser({
       ...userData,
       password: bcrypt.hashSync(password, 10),
@@ -29,11 +39,10 @@ export class AuthService {
     const { email, password } = loginUserInput;
     const user = await this.userService.findByEmail(email);
 
-    if (!user)
-      throw new UnauthorizedException('Credentials are not valid (email)');
+    if (!user) throw new UnauthorizedException('Credentials are not valid');
 
     if (!bcrypt.compareSync(password, user.password))
-      throw new UnauthorizedException('Credentials are not valid (password)');
+      throw new UnauthorizedException('Credentials are not valid');
 
     delete user.password;
     return {

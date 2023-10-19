@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsEmail, IsString } from 'class-validator';
+import { IsNotEmpty, IsEmail, IsString, Matches } from 'class-validator';
 
 @InputType()
 export class RegisterUserInput {
@@ -13,5 +13,9 @@ export class RegisterUserInput {
 
   @IsNotEmpty()
   @Field()
+  @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message:
+      'The password must have a Uppercase, lowercase letter and a number',
+  })
   password: string;
 }
