@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Resolver } from '@nestjs/graphql';
+import { ResolveReference, Resolver } from '@nestjs/graphql';
 import { Query, Mutation, Args } from '@nestjs/graphql';
 import { UserService } from '../services/user.service';
 import { Users } from '../entities/user.entity';
@@ -29,5 +29,10 @@ export class UserResolver {
   @Mutation(() => Users)
   updateUser(@Args('updateUserInput') updateUserInput: UpdateUserDto) {
     return this.userService.update(updateUserInput);
+  }
+
+  @ResolveReference()
+  resolveReference(reference: { __typename: string; id: number }) {
+    return this.userService.findOne(reference.id);
   }
 }
