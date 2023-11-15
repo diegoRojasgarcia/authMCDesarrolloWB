@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserInput } from '../dto/create-user.input';
 import { UpdateUserDto } from '../dto/update-user.input';
-import { ResolveReference } from '@nestjs/graphql';
 
 @Injectable()
 export class UserService {
