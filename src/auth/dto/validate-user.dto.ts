@@ -1,13 +1,13 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsString } from 'class-validator';
 import { Users } from 'src/user/entities/user.entity';
 
 @ObjectType()
-export class UserResponse {
+export class ValidateUserDto {
   @IsString()
   @Field()
-  access_token: string;
+  email: string;
 
   @Field()
-  user: Users;
+  pass: string;
 }

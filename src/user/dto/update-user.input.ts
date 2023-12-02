@@ -1,15 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateUserInput } from './create-user.input';
 import { Field, InputType, Int } from '@nestjs/graphql';
 
 @InputType()
-export class UpdateUserDto extends PartialType(CreateUserInput) {
+export class UpdateUserDto {
   @Field(() => Int)
   id?: number;
 
   @Field()
-  email?: string;
+  email: string;
 
   @Field()
-  name?: string;
+  name: string;
 }

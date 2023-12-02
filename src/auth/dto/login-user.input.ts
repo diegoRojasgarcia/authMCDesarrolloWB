@@ -1,5 +1,11 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsEmail } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsEmail,
+  Matches,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 @InputType()
 export class LoginUserInput {
@@ -8,6 +14,12 @@ export class LoginUserInput {
   email: string;
 
   @IsNotEmpty()
+  @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message:
+      'The password must have a Uppercase, lowercase letter and a number',
+  })
+  @MinLength(6)
+  @MaxLength(50)
   @Field()
   password: string;
 }
