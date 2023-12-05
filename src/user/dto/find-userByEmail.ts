@@ -6,5 +6,5 @@ export class FindUserByEmailInput {
   @IsEmail()
   @IsNotEmpty()
   @Field()
-  email: string;
+  email?: string;
 }

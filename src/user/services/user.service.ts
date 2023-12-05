@@ -51,14 +51,24 @@ export class UserService {
     return this.usersRepository.save(newUser);
   }
 
-  async update(updateUserDto: UpdateUserDto): Promise<Users> {
-    const { id, name, ...updateDto } = updateUserDto;
-    let userDB = await this.findByEmail(updateDto);
-    if (userDB.id != id)
-      throw new BadRequestException(`Email ingresado se encuentra registrado`);
+  async update(
+    findUserByIdInput: FindUserByIdInput,
+    updateUserDto: UpdateUserDto,
+  ) {
+    const { id } = findUserByIdInput;
+    const { email, name } = updateUserDto;
+    console.log(email, name);
+    let userDB = await this.findOne({ id });
+    const userEmail = await this.findByEmail({ email });
+    if (userEmail) {
+      if (userEmail.id != userDB.id)
+        throw new BadRequestException(
+          `Email ingresado se encuentra registrado`,
+        );
+    }
     userDB = await this.usersRepository.preload({
       id: id,
-      ...updateDto,
+      ...updateUserDto,
     });
     try {
       await this.usersRepository.save(userDB);

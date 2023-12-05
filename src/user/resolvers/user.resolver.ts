@@ -5,6 +5,7 @@ import { UserService } from '../services/user.service';
 import { Users } from '../entities/user.entity';
 import { UpdateUserDto } from '../dto/update-user.input';
 import { FindUserByEmailInput } from '../dto/find-userByEmail';
+import { FindUserByIdInput } from '../dto/find-userById';
 
 @Resolver(() => Users)
 export class UserResolver {
@@ -30,10 +31,11 @@ export class UserResolver {
 
   @Mutation(() => Users)
   updateUser(
-    @Args('updateUserInput') updateUserInput: UpdateUserDto,
+    @Args('findUserByIdInput') findUserByIdInput: FindUserByIdInput,
+    @Args('updateUserInput') updateUserDto: UpdateUserDto,
   ): Promise<Users> {
     try {
-      return this.userService.update(updateUserInput);
+      return this.userService.update(findUserByIdInput, updateUserDto);
     } catch (error) {
       throw new BadRequestException(error);
     }
