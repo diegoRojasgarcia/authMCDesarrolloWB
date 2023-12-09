@@ -57,7 +57,6 @@ export class UserService {
   ) {
     const { id } = findUserByIdInput;
     const { email, name } = updateUserDto;
-    console.log(email, name);
     let userDB = await this.findOne({ id });
     const userEmail = await this.findByEmail({ email });
     if (userEmail) {
