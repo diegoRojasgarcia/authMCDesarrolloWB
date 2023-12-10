@@ -89,14 +89,20 @@ export class AuthService {
   }
 
   async updatePassword(findUserByIdInput, updatePasswordDto): Promise<Users> {
-    const { oldpassword, password, confirmpassword } = updatePasswordDto;
-    const userDB = await this.userService.findOne(findUserByIdInput);
-    if (!bcrypt.compareSync(oldpassword, userDB.password))
-      throw new BadRequestException('Error en la contraseña, favor validar');
-    if (password !== confirmpassword)
-      throw new BadRequestException('Contraseñas no coinciden, favor validar');
-    userDB.password = bcrypt.hashSync(password, 10);
-    const usuarioSave = await this.userService.saveUser(userDB);
-    return usuarioSave;
+    try {
+      const { oldpassword, password, confirmpassword } = updatePasswordDto;
+      const userDB = await this.userService.findOne(findUserByIdInput);
+      if (!bcrypt.compareSync(oldpassword, userDB.password))
+        throw new BadRequestException('Error en la contraseña, favor validar');
+      if (password !== confirmpassword)
+        throw new BadRequestException(
+          'Contraseñas no coinciden, favor validar',
+        );
+      userDB.password = bcrypt.hashSync(password, 10);
+      const usuarioSave = await this.userService.saveUser(userDB);
+      return usuarioSave;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }
