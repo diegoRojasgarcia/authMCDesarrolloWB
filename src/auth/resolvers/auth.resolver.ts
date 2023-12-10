@@ -6,6 +6,10 @@ import { RegisterUserInput } from '../dto/register-user.input';
 import { RegisterUserResponse } from '../dto/register-user.response';
 import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { LoginUserResponse } from '../dto/login-user.response';
+import { Users } from 'src/user/entities/user.entity';
+import { FindUserByIdInput } from 'src/user/dto/find-userById';
+import { UpdateUserDto } from 'src/user/dto/update-user.input';
+import { updatePasswordDto } from '../dto/updatePassword.input';
 
 @Resolver('Auth')
 export class AuthResolver {
@@ -28,6 +32,21 @@ export class AuthResolver {
   ): Promise<RegisterUserResponse> {
     try {
       return this.authService.register(registerUserInput);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  @Mutation(() => Users)
+  updatePassword(
+    @Args('findUserByIdInput') findUserByIdInput: FindUserByIdInput,
+    @Args('updateUserInput') updatePasswordDto: updatePasswordDto,
+  ): Promise<Users> {
+    try {
+      return this.authService.updatePassword(
+        findUserByIdInput,
+        updatePasswordDto,
+      );
     } catch (error) {
       throw new BadRequestException(error);
     }

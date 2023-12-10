@@ -15,6 +15,8 @@ import { ValidateUserResponse } from '../dto/validate-user.response';
 import { ValidateUserDto } from '../dto/validate-user.dto';
 import { GetTokenInput } from '../dto/gettoken.input';
 import { TokenResponse } from '../dto/token.response';
+import { Users } from 'src/user/entities/user.entity';
+import { updatePasswordDto } from '../dto/updatePassword.input';
 
 @Injectable()
 export class AuthService {
@@ -84,5 +86,17 @@ export class AuthService {
   private getJwtToken(payload: GetTokenInput) {
     const token = this.jwtService.sign(payload);
     return token;
+  }
+
+  async updatePassword(findUserByIdInput, updatePasswordDto): Promise<Users> {
+    const { oldpassword, password, confirmpassword } = updatePasswordDto;
+    const userDB = await this.userService.findOne(findUserByIdInput);
+    if (!bcrypt.compareSync(oldpassword, userDB.password))
+      throw new BadRequestException('Error en la contraseña, favor validar');
+    if (password !== confirmpassword)
+      throw new BadRequestException('Contraseñas no coinciden, favor validar');
+    userDB.password = bcrypt.hashSync(password, 10);
+    const usuarioSave = await this.userService.saveUser(userDB);
+    return usuarioSave;
   }
 }
