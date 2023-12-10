@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Unique,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ObjectType, Field, Int, Directive } from '@nestjs/graphql';
 
 @Entity()
@@ -9,12 +16,12 @@ export class Users {
   @Field((type) => Int)
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   @Unique(['email']) // Indica que el campo debe ser único en la columna "email"
   @Field()
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   @Field()
   name: string;
 
@@ -25,4 +32,19 @@ export class Users {
   @Column()
   @Field()
   accessToken?: string;
+
+  @CreateDateColumn({
+    type: 'date',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  @Field()
+  public created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'date',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  @Field()
+  public updated_at: Date;
 }
