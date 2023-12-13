@@ -79,41 +79,53 @@ export class UserService {
   }
 
   async sendEmail(emailUserDto): Promise<resetPassResponse> {
-    const userDB = await this.findByEmail(emailUserDto);
-    if (!userDB) {
+    try {
+      const userDB = await this.findByEmail(emailUserDto);
+      if (!userDB) {
+        throw new BadRequestException(
+          `Favor validar email, intentalo nuevamente`,
+        );
+      }
+      const token = new Token();
+      token.email = userDB.email;
+      token.nombreuser = userDB.name;
+      token.token = crypto.randomBytes(3).toString('hex').slice(0, 6);
+      token.expires_at = new Date(Date.now() + 3600000);
+      const responseEmail = await this.mailService.sendResetMail(token);
+      await this.tokenRepository.save(token);
+      return responseEmail;
+    } catch (error) {
       throw new BadRequestException(
-        `Favor validar email, intentalo nuevamente`,
+        `Algo inesperado ocurrio, inténtalo nuevamente`,
       );
     }
-    const token = new Token();
-    token.email = userDB.email;
-    token.nombreuser = userDB.name;
-    token.token = crypto.randomBytes(3).toString('hex').slice(0, 6);
-    token.expires_at = new Date(Date.now() + 3600000);
-    const responseEmail = await this.mailService.sendResetMail(token);
-    await this.tokenRepository.save(token);
-    return responseEmail;
   }
 
   async resetPassword(
     resetPasswordDto: ResetPasswordDto,
   ): Promise<resetPassResponse> {
     const { token, newPassword } = resetPasswordDto;
-    const tokenDB = await this.tokenRepository.findOne({
-      where: { token },
-    });
-    if (!tokenDB || tokenDB.expires_at < new Date()) {
-      throw new BadRequestException(`Favor validar, token inválido`);
+    try {
+      const tokenDB = await this.tokenRepository.findOne({
+        where: { token },
+      });
+      if (!tokenDB || tokenDB.expires_at < new Date()) {
+        throw new BadRequestException(`Favor validar, token inválido`);
+      }
+      const userDB = await this.findByEmail(tokenDB);
+      if (!userDB) {
+        throw new BadRequestException(`Usuario inválido`);
+      }
+      userDB.password = bcrypt.hashSync(newPassword, 10);
+      await this.usersRepository.save(userDB);
+      await this.tokenRepository.delete({ id: tokenDB.id });
+      return {
+        message: 'Password actualizada correctamente',
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Algo inesperado ocurrio, inténtalo nuevamente`,
+      );
     }
-    const userDB = await this.findByEmail(tokenDB);
-    if (!userDB) {
-      throw new BadRequestException(`Usuario inválido`);
-    }
-    userDB.password = bcrypt.hashSync(newPassword, 10);
-    await this.usersRepository.save(userDB);
-    await this.tokenRepository.delete({ id: tokenDB.id });
-    return {
-      message: 'Password actualizada correctamente',
-    };
   }
 }
