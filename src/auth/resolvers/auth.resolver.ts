@@ -4,11 +4,10 @@ import { LoginUserInput } from '../dto/login-user.input';
 import { UserResponse } from '../dto/user.response';
 import { RegisterUserInput } from '../dto/register-user.input';
 import { RegisterUserResponse } from '../dto/register-user.response';
-import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { LoginUserResponse } from '../dto/login-user.response';
 import { Users } from 'src/user/entities/user.entity';
 import { FindUserByIdInput } from 'src/user/dto/find-userById';
-import { UpdateUserDto } from 'src/user/dto/update-user.input';
 import { updatePasswordDto } from '../dto/updatePassword.input';
 
 @Resolver('Auth')

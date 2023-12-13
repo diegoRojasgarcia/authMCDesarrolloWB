@@ -6,6 +6,9 @@ import { Users } from '../entities/user.entity';
 import { UpdateUserDto } from '../dto/update-user.input';
 import { FindUserByEmailInput } from '../dto/find-userByEmail';
 import { FindUserByIdInput } from '../dto/find-userById';
+import { emailUserDto } from '../dto/emailUser.dto';
+import { ResetPasswordDto } from '../dto/resetPassword.dto';
+import { resetPassResponse } from '../entities/resetPass.entity';
 
 @Resolver(() => Users)
 export class UserResolver {
@@ -39,6 +42,20 @@ export class UserResolver {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+
+  @Mutation(() => resetPassResponse)
+  sendEmailToken(
+    @Args('emailUserInput') emailUserDto: emailUserDto,
+  ): Promise<resetPassResponse> {
+    return this.userService.sendEmail(emailUserDto);
+  }
+
+  @Mutation(() => resetPassResponse)
+  sendResetPassword(
+    @Args('ResetPasswordInput') resetPasswordDto: ResetPasswordDto,
+  ): Promise<resetPassResponse> {
+    return this.userService.resetPassword(resetPasswordDto);
   }
 
   @ResolveReference()

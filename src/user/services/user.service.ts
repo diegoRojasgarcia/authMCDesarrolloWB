@@ -1,25 +1,26 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Users } from '../entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserInput } from '../dto/create-user.input';
 import { UpdateUserDto } from '../dto/update-user.input';
-import { PasswordResetDto } from '../dto/resetpass.dto';
 import * as crypto from 'crypto';
 import { MailService } from 'src/mail/mailer.service';
 import { FindUserByEmailInput } from '../dto/find-userByEmail';
 import { FindUserByIdInput } from '../dto/find-userById';
+import { Token } from 'src/user/entities/token.entity';
+import { ResetPasswordDto } from '../dto/resetPassword.dto';
+import { resetPassResponse } from '../entities/resetPass.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(Users)
     private usersRepository: Repository<Users>,
-    private sendEmail: MailService,
+    @InjectRepository(Token)
+    private tokenRepository: Repository<Token>,
+    private mailService: MailService,
   ) {}
 
   async findAll(): Promise<Users[]> {
@@ -55,7 +56,6 @@ export class UserService {
     findUserByIdInput: FindUserByIdInput,
     updateUserDto: UpdateUserDto,
   ) {
-    console.log(updateUserDto);
     const { id } = findUserByIdInput;
     const { email } = updateUserDto;
     let userDB = await this.findOne({ id });
@@ -78,20 +78,42 @@ export class UserService {
     }
   }
 
-  // async createPasswordResetToken(
-  //   PasswordResetDto: PasswordResetDto,
-  // ): Promise<void> {
-  //   const user = await this.usersRepository.findOne({
-  //     where: { email: PasswordResetDto.email },
-  //   });
+  async sendEmail(emailUserDto): Promise<resetPassResponse> {
+    const userDB = await this.findByEmail(emailUserDto);
+    if (!userDB) {
+      throw new BadRequestException(
+        `Favor validar email, intentalo nuevamente`,
+      );
+    }
+    const token = new Token();
+    token.email = userDB.email;
+    token.nombreuser = userDB.name;
+    token.token = crypto.randomBytes(3).toString('hex').slice(0, 6);
+    token.expires_at = new Date(Date.now() + 3600000);
+    const responseEmail = await this.mailService.sendResetMail(token);
+    await this.tokenRepository.save(token);
+    return responseEmail;
+  }
 
-  //   if (!user) {
-  //     throw new NotFoundException('Erro al enviar el correo, favor revisar!');
-  //   }
-  //   const resetCode = crypto.randomBytes(3).toString('hex').slice(0, 6); // Obtiene una cadena de 6 dígitos
-  //   await this.sendEmail.sendPasswordResetMail(
-  //     PasswordResetDto.email,
-  //     resetCode,
-  //   );
-  // }
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<resetPassResponse> {
+    const { token, newPassword } = resetPasswordDto;
+    const tokenDB = await this.tokenRepository.findOne({
+      where: { token },
+    });
+    if (!tokenDB || tokenDB.expires_at < new Date()) {
+      throw new BadRequestException(`Favor validar, token inválido`);
+    }
+    const userDB = await this.findByEmail(tokenDB);
+    if (!userDB) {
+      throw new BadRequestException(`Usuario inválido`);
+    }
+    userDB.password = bcrypt.hashSync(newPassword, 10);
+    await this.usersRepository.save(userDB);
+    await this.tokenRepository.delete({ id: tokenDB.id });
+    return {
+      message: 'Password actualizada correctamente',
+    };
+  }
 }
