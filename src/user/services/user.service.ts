@@ -41,13 +41,11 @@ export class UserService {
 
   async findByEmail({ email }: FindUserByEmailInput): Promise<Users> {
     try {
-      const userDB = this.usersRepository.findOne({
+      return this.usersRepository.findOne({
         where: {
           email,
         },
       });
-      if (!userDB) throw new NotFoundException(`User not found`);
-      return userDB;
     } catch (error) {
       throw new NotFoundException(`User not found`);
     }
