@@ -24,7 +24,9 @@ export class UserResolver {
   }
 
   @Query((returns) => Users)
-  user(@Args('email') data: FindUserByEmailInput): Promise<Users> {
+  user(
+    @Args('findUserByEmailInput') data: FindUserByEmailInput,
+  ): Promise<Users> {
     try {
       return this.userService.findByEmail(data);
     } catch (error) {

@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,9 +13,7 @@ import { RegisterUserResponse } from '../dto/register-user.response';
 import { ValidateUserResponse } from '../dto/validate-user.response';
 import { ValidateUserDto } from '../dto/validate-user.dto';
 import { GetTokenInput } from '../dto/gettoken.input';
-import { TokenResponse } from '../dto/token.response';
 import { Users } from 'src/user/entities/user.entity';
-import { updatePasswordDto } from '../dto/updatePassword.input';
 
 @Injectable()
 export class AuthService {
