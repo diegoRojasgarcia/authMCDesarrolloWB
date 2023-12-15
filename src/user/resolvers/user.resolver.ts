@@ -1,4 +1,8 @@
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
 import { ResolveReference, Resolver } from '@nestjs/graphql';
 import { Query, Mutation, Args } from '@nestjs/graphql';
 import { UserService } from '../services/user.service';
@@ -30,7 +34,7 @@ export class UserResolver {
     try {
       return this.userService.findByEmail(data);
     } catch (error) {
-      throw new BadRequestException(error);
+      throw new NotFoundException(`User not found`);
     }
   }
 

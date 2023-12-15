@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Users } from '../entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -36,11 +40,17 @@ export class UserService {
   }
 
   async findByEmail({ email }: FindUserByEmailInput): Promise<Users> {
-    return this.usersRepository.findOne({
-      where: {
-        email,
-      },
-    });
+    try {
+      const userDB = this.usersRepository.findOne({
+        where: {
+          email,
+        },
+      });
+      if (!userDB) throw new NotFoundException(`User not found`);
+      return userDB;
+    } catch (error) {
+      throw new NotFoundException(`User not found`);
+    }
   }
 
   async createUser(createUserInput: CreateUserInput): Promise<Users> {
@@ -79,13 +89,6 @@ export class UserService {
   }
 
   async sendEmail(emailUserDto): Promise<resetPassResponse> {
-    // try {
-
-    // } catch (error) {
-    //   throw new BadRequestException(
-    //     `Algo inesperado ocurrio, inténtalo nuevamente`,
-    //   );
-    // }
     const userDB = await this.findByEmail(emailUserDto);
     if (!userDB) {
       throw new BadRequestException(
